@@ -41,9 +41,9 @@ export default function OrderDetailPage() {
       setMsg(null)
       try {
          const res = await fetch(`/api/orders/${id}`, {
-         method: 'PATCH',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ note }),
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ note }),
          })
          const json = await res.json().catch(() => null)
          if (!json?.success) throw new Error(json?.data?.message ?? 'Failed to update')
