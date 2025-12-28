@@ -13,22 +13,25 @@ const UpdateProductSchema = z.object({
    is_active: z.boolean().optional(),
 })
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    if (!gate.ok) return gate.response
 
+   const { id } = await params;
    const { data, error } = await supabaseService
       .from('products')
       .select('id,category_id,name,slug,description,price_idr,image_path,is_active,created_at,updated_at')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
    if (error || !data) return fail('Product not found', 404)
    return ok({ product: data })
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request,{ params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
+   const { id } = await params;
+
    if (!gate.ok) return gate.response
 
    const body = await req.json().catch(() => null)
@@ -39,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    const { data, error } = await supabaseService
       .from('products')
       .update({ ...parsed.data, updated_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .eq('id', id)
       .select('id,category_id,name,slug,description,price_idr,image_path,is_active,created_at,updated_at')
       .single()
 
@@ -52,14 +55,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    return ok({ product: data })
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    if (!gate.ok) return gate.response
 
-   // Optional cleanup: delete variants dulu (kalau FK cascade belum di-set)
-   await supabaseService.from('product_variants').delete().eq('product_id', params.id)
+   const { id } = await params;
 
-   const { error } = await supabaseService.from('products').delete().eq('id', params.id)
+   // Optional cleanup: delete variants dulu (kalau FK cascade belum di-set)
+   await supabaseService.from('product_variants').delete().eq('product_id', id)
+
+   const { error } = await supabaseService.from('products').delete().eq('id', id)
    if (error) return fail('Failed to delete product', 500, { error: error.message })
 
    return ok({ deleted: true })
