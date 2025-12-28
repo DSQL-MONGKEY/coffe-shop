@@ -11,7 +11,7 @@ const UpdateCategorySchema = z.object({
    is_active: z.boolean().optional(),
 })
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    const { id } = await params
    if (!gate.ok) return gate.response
@@ -26,7 +26,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
    return ok({ category: data })
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request,{ params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    const { id } = await params
    if (!gate.ok) return gate.response
@@ -53,7 +53,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    return ok({ category: data })
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    const { id } = await params
    if (!gate.ok) return gate.response
