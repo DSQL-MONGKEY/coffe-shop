@@ -3,8 +3,6 @@ import { ok, fail } from '@/lib/api/response'
 import { requireAdmin } from '@/lib/api/admin'
 import { supabaseService } from '@/lib/supabase/service'
 
-export const dynamic = 'force-dynamic'
-
 const UpdateProductSchema = z.object({
    category_id: z.string().uuid().nullable().optional(),
    name: z.string().min(1).optional(),
