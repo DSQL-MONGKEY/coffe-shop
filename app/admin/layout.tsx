@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import AdminGate from './admin-gate'
 
 
 function AdminLoading() {
@@ -14,18 +13,7 @@ function AdminLoading() {
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-   const { supabase } = await createClient()
-   const { data: userRes } = await supabase.auth.getUser()
-
-   if (!userRes?.user) redirect('/auth/login')
-
-   const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', userRes.user.id)
-      .maybeSingle()
-
-   if (profile?.role !== 'admin') redirect('/')
-
-   return <Suspense fallback={<AdminLoading />}>{children}</Suspense>
+   return <Suspense fallback={<AdminLoading />}>
+      <AdminGate>{children}</AdminGate>
+   </Suspense>
 }
