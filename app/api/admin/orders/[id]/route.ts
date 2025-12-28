@@ -9,7 +9,7 @@ const UpdateOrderSchema = z.object({
    note: z.string().max(300).optional(),
 })
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    const { id } = await params;
    if (!gate.ok) return gate.response
@@ -41,8 +41,9 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
    return ok({ order, items: items ?? [], payment: payment ?? null })
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
+   const { id } = await params;
    if (!gate.ok) return gate.response
 
    const body = await req.json().catch(() => null)
@@ -54,7 +55,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    const { data: updated, error: uErr } = await supabaseService
       .from('orders')
       .update({ ...parsed.data, updated_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .eq('id', id)
       .select('id,order_no,status,total_idr,customer_name,updated_at')
       .single()
 
@@ -65,7 +66,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    if (parsed.data.status === 'paid') {
       const paidAt = new Date().toISOString()
       await supabaseService.from('payments').upsert({
-         order_id: params.id,
+         order_id: id,
          provider: 'manual',
          provider_order_id: updated.order_no,
          status: 'paid',
@@ -78,18 +79,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    return ok({ order: updated })
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
+   const { id } = await params
    if (!gate.ok) return gate.response
 
    // Hard delete: hapus children dulu agar aman (kalau cascade belum diset)
-   const { error: iErr } = await supabaseService.from('order_items').delete().eq('order_id', params.id)
+   const { error: iErr } = await supabaseService.from('order_items').delete().eq('order_id', id)
    if (iErr) return fail('Failed to delete order items', 500, { error: iErr.message })
 
-   const { error: pErr } = await supabaseService.from('payments').delete().eq('order_id', params.id)
+   const { error: pErr } = await supabaseService.from('payments').delete().eq('order_id', id)
    if (pErr) return fail('Failed to delete payment', 500, { error: pErr.message })
 
-   const { error: oErr } = await supabaseService.from('orders').delete().eq('id', params.id)
+   const { error: oErr } = await supabaseService.from('orders').delete().eq('id', id)
    if (oErr) return fail('Failed to delete order', 500, { error: oErr.message })
 
    return ok({ deleted: true })
