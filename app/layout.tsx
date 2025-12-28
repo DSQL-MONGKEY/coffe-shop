@@ -9,8 +9,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Fresh Brews Coffee Shop",
+  description: "A modern coffee shop catalog built with Next.js and Supabase.",
 };
 
 const geistSans = Geist({
