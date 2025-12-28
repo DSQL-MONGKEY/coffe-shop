@@ -13,24 +13,26 @@ const UpdateVariantSchema = z.object({
    is_active: z.boolean().optional(),
 })
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    if (!gate.ok) return gate.response
 
+   const { id } = await params;
    const { data, error } = await supabaseService
       .from('product_variants')
       .select('id,product_id,code,label,price_delta_idr,is_default,sort_order,is_active,created_at,updated_at')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
    if (error || !data) return fail('Variant not found', 404)
    return ok({ variant: data })
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
    const gate = await requireAdmin()
    if (!gate.ok) return gate.response
-
+   
+   const { id } = await params;
    const body = await req.json().catch(() => null)
    const parsed = UpdateVariantSchema.safeParse(body)
    if (!parsed.success) return fail('Invalid payload', 400, { issues: parsed.error.flatten() })
@@ -41,7 +43,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       const { data: current, error: cErr } = await supabaseService
          .from('product_variants')
          .select('product_id')
-         .eq('id', params.id)
+         .eq('id', id)
          .single()
 
       if (cErr || !current) return fail('Variant not found', 404)
@@ -55,7 +57,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    const { data, error } = await supabaseService
       .from('product_variants')
       .update({ ...parsed.data, updated_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .eq('id', id)
       .select('id,product_id,code,label,price_delta_idr,is_default,sort_order,is_active,created_at,updated_at')
       .single()
 
