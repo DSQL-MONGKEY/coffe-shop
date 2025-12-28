@@ -9,15 +9,16 @@ const UpdateOrderSchema = z.object({
    note: z.string().max(300).optional(),
 })
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const { supabase } = await createClient()
    const { data: auth } = await supabase.auth.getUser()
+   const { id } = await params;
    if (!auth.user) return fail('Unauthorized', 401)
 
    const { data: order, error: oErr } = await supabaseService
       .from('orders')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
    if (oErr || !order) return fail('Order not found', 404)
@@ -42,9 +43,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
    return ok({ order, items: items ?? [], payment: payment ?? null })
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
    const { supabase } = await createClient()
    const { data: auth } = await supabase.auth.getUser()
+   const { id } = await params;
+   
    if (!auth.user) return fail('Unauthorized', 401)
 
    const body = await req.json().catch(() => null)
@@ -54,7 +57,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
    const { data: order, error: oErr } = await supabaseService
       .from('orders')
       .select('id,user_id,status')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
    if (oErr || !order) return fail('Order not found', 404)
