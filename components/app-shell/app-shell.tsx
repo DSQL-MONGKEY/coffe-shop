@@ -1,34 +1,34 @@
 'use client'
 
-import * as React from 'react'
 import { AppSidebar } from '@/components/app-shell/app-sidebar'
 import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { UserMenu } from './user-menu'
+import { ReactNode, useEffect, useState } from 'react'
 
 type Props = {
-   children: React.ReactNode
+   children: ReactNode
    title?: string
    onSearch?: (q: string) => void
 }
 
 export function AppShell({ children, title = 'Catalog', onSearch }: Props) {
-   const [collapsed, setCollapsed] = React.useState(false)
-   const [q, setQ] = React.useState('')
+   const [collapsed, setCollapsed] = useState(false)
+   const [q, setQ] = useState('')
 
    // persist collapse
-   React.useEffect(() => {
+   useEffect(() => {
       const v = localStorage.getItem('sidebar:collapsed')
       if (v) setCollapsed(v === '1')
    }, [])
-   React.useEffect(() => {
+   useEffect(() => {
       localStorage.setItem('sidebar:collapsed', collapsed ? '1' : '0')
    }, [collapsed])
 
    // debounce search
-   React.useEffect(() => {
+   useEffect(() => {
       if (!onSearch) return
       const t = setTimeout(() => onSearch(q.trim()), 250)
       return () => clearTimeout(t)
@@ -83,7 +83,9 @@ export function AppShell({ children, title = 'Catalog', onSearch }: Props) {
                </div>
             </header>
 
-            <main className="px-4 md:px-6 py-6">{children}</main>
+            <main className="px-4 md:px-6 py-6">
+               {children}
+            </main>
          </div>
          </div>
       </div>
