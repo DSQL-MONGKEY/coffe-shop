@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app-shell/app-shell'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,7 +14,16 @@ function rupiah(n: number) {
    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
 }
 
-export default function OrderDetailPage() {
+function PageLoading() {
+   return (
+      <AppShell title="Order Detail" onSearch={() => {}}>
+         <div className="text-sm text-muted-foreground">Loading…</div>
+      </AppShell>
+   )
+}
+
+// ✅ useParams dipindah ke komponen anak (dibungkus Suspense)
+function OrderDetailInner() {
    const params = useParams<{ id: string }>()
    const router = useRouter()
    const id = params.id
@@ -41,9 +51,9 @@ export default function OrderDetailPage() {
       setMsg(null)
       try {
          const res = await fetch(`/api/orders/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ note }),
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ note }),
          })
          const json = await res.json().catch(() => null)
          if (!json?.success) throw new Error(json?.data?.message ?? 'Failed to update')
@@ -136,5 +146,13 @@ export default function OrderDetailPage() {
          </div>
          )}
       </AppShell>
+   )
+}
+
+export default function OrderDetailPage() {
+   return (
+      <Suspense fallback={<PageLoading />}>
+         <OrderDetailInner />
+      </Suspense>
    )
 }
