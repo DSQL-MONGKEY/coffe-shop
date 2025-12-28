@@ -1,14 +1,14 @@
 import { ok, fail } from '@/lib/api/response'
 import { createClient } from '@/lib/supabase/server'
 
-
-export async function GET(_: Request, { params }: { params: { slug: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
    const { supabase } = await createClient()
+   const { slug } = await params
 
    const { data: product, error } = await supabase
       .from('products')
       .select('id,category_id,name,slug,description,price_idr,image_path,created_at')
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .eq('is_active', true)
       .single()
 
