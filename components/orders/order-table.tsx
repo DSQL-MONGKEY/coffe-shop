@@ -62,7 +62,9 @@ export function OrdersTable({
                      <div className="flex items-center gap-2">
                      <OrderStatusBadge status={o.status} />
                      {o.payment?.status && (
-                        <span className="text-xs text-muted-foreground">• pay: {o.payment.status}</span>
+                        <span className="text-xs text-muted-foreground">
+                           • pay: {o.payment.status}
+                        </span>
                      )}
                      </div>
                   </TableCell>

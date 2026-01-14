@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useMe } from '@/components/app-shell/use-me'
-import { Shield, ChevronDown, Package, ReceiptText, Tags } from 'lucide-react'
+import { Shield, ChevronDown, Package, ReceiptText, Tags, Paperclip } from 'lucide-react'
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -21,6 +21,7 @@ const ADMIN_ITEMS = [
    { href: '/admin/orders', label: 'Orders', icon: ReceiptText },
    { href: '/admin/products', label: 'Products', icon: Package },
    { href: '/admin/categories', label: 'Categories', icon: Tags },
+   { href: '/admin/reports', label: 'Reports', icon: Paperclip },
 ] as const
 
 export function AdminMenu({ collapsed = false }: Props) {
